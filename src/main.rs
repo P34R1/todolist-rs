@@ -1,38 +1,48 @@
-use todolist_rs::{Todo, TodoList};
+mod todo;
+mod todolist;
+
+use todo::Todo;
+use todolist::{add_todo, view_tasks};
 
 extern "C" {
     fn _getch() -> u8;
 }
 
 fn cls() {
-    print!("\x1b[0m\x1b[H\x1b[J");
+    print!("\x1b[H\x1b[J");
 }
 
-const INSTRUCTIONS: &str = "'A'dd 'D'elete 'E'dit 'T'oggle complete 'Q'uit. Up Arrow Down Arrow.";
+// ANSI Colours
+pub const RED: &str = "\x1b[31m";
+pub const GREEN: &str = "\x1b[32m";
+pub const BOLD: &str = "\x1b[1m";
 
+const INSTRUCTIONS: &str =
+    "\x1b[0m'A'dd 'D'elete 'E'dit 'T'oggle complete 'Q'uit. Up Arrow Down Arrow.";
+
+// Keybinds
 const ADD: char = 'a';
 const DELETE: char = 'd';
 const EDIT: char = 'e';
 const TOGGLE: char = 't';
 const QUIT: char = 'q';
-
 const UP_ARROW: char = 'H';
 const DOWN_ARROW: char = 'P';
 
 fn main() {
-    let mut todos = vec![
+    let mut todos = Vec::from([
         Todo::new("Learn Rust".into()),
         Todo::new("Learn C".into()),
         Todo::new("Learn Zig".into()),
-    ];
+    ]);
 
-    let mut selected_index = 0;
+    let mut selected_index: usize = 0;
 
     loop {
         cls();
 
         println!("{}", INSTRUCTIONS);
-        todos.view_tasks(selected_index);
+        view_tasks(&todos, selected_index);
 
         let ch = unsafe { _getch() } as char;
 
@@ -52,7 +62,7 @@ fn main() {
 
             EDIT => todos[selected_index].edit(),
 
-            ADD => todos.add_todo(),
+            ADD => add_todo(&mut todos),
             DELETE => {
                 todos.remove(selected_index);
 
